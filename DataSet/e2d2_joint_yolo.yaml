@@ -1,0 +1,8 @@
+path: /Users/myh45466/PycharmProjects/CSNew/data/E2D2_joint
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: CS
+  1: CS Description
