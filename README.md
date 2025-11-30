@@ -59,7 +59,7 @@ python demo.py
 ```
 
 > [!TIP]
-> You can change this threshold directly in the Gradio UI using the slider. So if you want more recall (catch more CS cases), decrease the threshold (but it will lower the precision and overall score)
+> You can change this threshold directly in the Gradio UI using the slider. So if you want more recall (catch more CS cases), decrease the threshold (but it will lower the precision and overall F1 score)
 
 ### Repository structure
 Key files and folders used by `demo.py`
