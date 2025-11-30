@@ -51,7 +51,7 @@ Make sure you downloaded `hrnet.pth` from the Blastocyst-Seg repository and plac
 Models/Blastocyst-Seg/weights/hrnet.pth
 ```
 
-### Run the Demo
+## Run the Demo
 
 Once dependencies and weights are set up, you can launch the Web UI demo:
 ```bash
@@ -61,7 +61,7 @@ python demo.py
 > [!TIP]
 > You can change this threshold directly in the Gradio UI using the slider. So if you want more recall (catch more CS cases), decrease the threshold (but it will lower the precision and overall score)
 
-### 4. Repository structure
+### Repository structure
 Key files and folders used by `demo.py`
 
 ```
@@ -81,6 +81,97 @@ Automated-CS-Detection/
 ├── DataSet/                          # (optional) training/validation data etc.
 └── .gitmodules                       # Blastocyst-Seg submodule config
 ```
+
+## Training Stage 2 (Classifier)
+
+Stage 2 is a **binary EfficientNet-B2 classifier** that predicts whether a cropped blastocyst image contains CS (`1`) or not (`0`).  
+This section explains how to train (or re-train) this classifier and how to plug a new checkpoint into the demo.
+
+### 1. Prepare the CSV files
+
+The training script expects **three CSV files** for train / val / test splits, each with the columns:
+
+- `path` – absolute or relative path to the image file
+- `label` – integer class label (`0` = No_CS, `1` = CS_present)
+
+Example `train.csv`:
+
+```csv
+path,label
+DataSet/stage2/train/img_0001.png,0
+DataSet/stage2/train/img_0002.png,1
+DataSet/stage2/train/img_0003.png,0
+...
+```
+
+> [!NOTE]
+> Images are expected to be RGB. The script will resize/augment them internally.
+
+### 2. Run The Training
+
+From the repo root:
+
+```bash
+python Models/Stage2Classifier/train_classifier.py \
+  --train_csv DataSet/stage2_train.csv \
+  --val_csv   DataSet/stage2_val.csv   \
+  --test_csv  DataSet/stage2_test.csv  \
+  --out_dir   outputs_b2
+...
+```
+
+Important arguments (with defaults):
+
+* `--image_size` (default: `260`) – input size for EfficientNet-B2.
+
+* `--batch_size` (default: `16`)
+
+* `--epochs` (default: `30`)
+
+* `--lr` (default: `3e-4`)
+
+* `--weight_decay` (default: `1e-4`)
+
+* `--pretrained` – use ImageNet-pretrained EfficientNet-B2 (if weights available locally).
+
+* `--no_amp` – disable mixed precision.
+
+* `--cpu` – force CPU.
+
+* `--patience` (default: `8`) – early-stopping patience on val PR-AUC.
+
+Run `python train_classifier.py -h` for all options.
+
+### 3. Outputs
+
+After training, `--out_dir` will contain:
+
+* `best.pt` – best checkpoint
+
+* `history.json` – list of per-epoch validation metrics
+
+* `val_pr_curve.png`, `val_roc_curve.png`, `val_confusion_matrix.png`
+
+* `test_pr_curve.png`, `test_roc_curve.png`, `test_confusion_matrix.png`
+
+* `val_preds.csv`, `test_preds.csv` – probabilities, labels, and predictions
+
+If you train a new classifier and it performs better, you should update the weights used by `demo.py`.
+1. Take the `best.pt` checkpoint from your out_dir.
+2. Copy and rename it to:
+```
+Models/Stage2Classifier/weights/cs_effb2.pt
+```
+
+
+
+
+## Acknowledgements
+We use the exact open-source implementation and HRNet weights from the authors’ Blastocyst-Seg repository:
+https://github.com/mavillot/Blastocyst-Seg
+Please cite and acknowledge the original Blastocyst-Seg work if you use this pipeline in research.
+
+
 
 
 
