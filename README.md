@@ -163,6 +163,99 @@ If you train a new classifier and it performs better, you should update the weig
 Models/Stage2Classifier/weights/cs_effb2.pt
 ```
 
+## Training Stage 3 (Localizer)
+
+Stage 3 is a **YOLO11-s detector** that localizes CS regions with **axis-aligned bounding boxes**.  
+This section explains how to train / evaluate the detector and how to plug a new checkpoint into the demo.
+
+---
+
+### 1. Dataset layout
+
+The YOLO script assumes the DataSet is:
+
+```text
+Dataset/
+├── images/
+│   ├── train/
+│   ├── val/
+│   └── test/
+├── labels/
+│   ├── train/
+│   ├── val/
+│   └── test/
+├── cls_train.csv
+├── cls_val.csv
+└── cls_test.csv
+```
+
+Where:
+* `images/*/*.png` (or `.jpg` ) are the frames.
+* `labels/*/*.txt` are YOLO bounding-box labels (one file per image).
+* cls_*.csv files contain:
+** `image_path` – relative path to the image.
+** `label` – `1` if CS is present, `0` otherwise
+
+### 2. Training script
+
+Make sure you installed:
+```bash
+pip install ultralytics torch torchvision
+```
+
+Then run:
+
+```bash
+python train_yolo_cs.py train \
+  --model_name yolo11s.pt \
+  --epochs 100 \
+  --imgsz 640 \
+  --batch 16 \
+  --device auto
+```
+
+The key arguments are:
+* `--model_name` – base YOLO11 model (default: `yolo11s.pt`)
+
+* `--epochs` – number of training epochs (default: `100`)
+
+* `--imgsz` – input image size (default: `640`)
+
+* `--batch` – batch size (default: `16`)
+
+* `--device` – `"auto"`, `"cpu"`, `"mps"`, `"0"`, `"cuda:0"`, etc.
+
+### 3. Training script
+
+To validate a specific checkpoint on the val split:
+```bash
+python train_yolo_cs.py eval \
+  --weights path/to/your/weights  \
+  --imgsz 640 \
+  --device auto
+```
+Ultralytics will report standard detection metrics (mAP, precision, recall, etc.)
+
+If you train a better CS localizer, then replace the demo checkpoint:
+```Path
+Models/Stage3Detector/weights/cs_yolo11s.pt
+```
+
+
+### 4. Run predictions on a folder
+
+To run detection on a folder of images and save annotated outputs:
+
+```bash
+python train_yolo_cs.py predict \
+  --weights path/to/your/weights   \
+  --source path/to/your/images_folder \
+  --imgsz 640 \
+  --device auto \
+  --conf 0.25
+```
+
+Annotated images are saved under `runs/detect/...` by Ultralytics.
 
 
 
