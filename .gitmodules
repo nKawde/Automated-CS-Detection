@@ -1,0 +1,3 @@
+[submodule "Models/Blastocyst-Seg"]
+	path = Models/Blastocyst-Seg
+	url = https://github.com/mavillot/Blastocyst-Seg.git
