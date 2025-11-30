@@ -225,7 +225,7 @@ The key arguments are:
 
 * `--device` – `"auto"`, `"cpu"`, `"mps"`, `"0"`, `"cuda:0"`, etc.
 
-### 3. Training script
+### 3. Valadating Script
 
 To validate a specific checkpoint on the val split:
 ```bash
